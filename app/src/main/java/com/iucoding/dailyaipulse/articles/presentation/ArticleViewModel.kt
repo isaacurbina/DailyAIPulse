@@ -37,7 +37,7 @@ class ArticleViewModel @Inject constructor(
                 Timber.e(throwable, "Error loading articles")
                 emitState(
                     ArticleUiState.Error(
-                        message = throwable.message ?: "Failed to load articles"
+                        message = "Something went wrong, please try again later"
                     )
                 )
             }
@@ -62,4 +62,3 @@ private fun ArticleData.toArticle(): Article {
         content = content
     )
 }
-
