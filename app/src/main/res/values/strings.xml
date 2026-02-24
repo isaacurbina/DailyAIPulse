@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">DailyAIPulse</string>
+    <string name="articles_screen_title">Articles</string>
+
+    <string name="article_date_today">Today</string>
+    <string name="article_date_yesterday">Yesterday</string>
+    <string name="article_date_days_ago">%d days ago</string>
 </resources>
