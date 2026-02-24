@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.iucoding.dailyaipulse">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".DailyAIPulseApplication"
         android:allowBackup="true"
