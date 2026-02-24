@@ -11,8 +11,8 @@ import javax.inject.Singleton
 
 @Singleton
 class ArticleRepository @Inject constructor(
-	private val api: ArticleApi,
-	@field:Named("news_api_key") private val apiKey: String
+    private val api: ArticleApi,
+    @Named("news_api_key") private val apiKey: String
 ) {
 
     suspend fun getArticles(): List<ArticleData> {
