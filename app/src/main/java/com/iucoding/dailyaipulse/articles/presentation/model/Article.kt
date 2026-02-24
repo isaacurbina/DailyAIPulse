@@ -10,4 +10,3 @@ data class Article(
     val date: String,
     val content: String?
 )
-

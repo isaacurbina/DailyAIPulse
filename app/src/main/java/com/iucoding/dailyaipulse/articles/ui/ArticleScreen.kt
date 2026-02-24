@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.iucoding.dailyaipulse.R
 import com.iucoding.dailyaipulse.articles.presentation.ArticleUiState
 import com.iucoding.dailyaipulse.articles.presentation.ArticleViewModel
 import com.iucoding.dailyaipulse.articles.presentation.model.Article
@@ -42,7 +44,7 @@ fun ArticleScreen(
         modifier = modifier.fillMaxSize(),
         topBar = {
             Text(
-                text = "Articles",
+                text = stringResource(R.string.articles_screen_title),
                 style = MaterialTheme.typography.headlineSmall,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -106,6 +108,8 @@ private fun ArticleItem(
     article: Article,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -113,7 +117,7 @@ private fun ArticleItem(
     ) {
         if (!article.imageUrl.isNullOrBlank()) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
+                model = ImageRequest.Builder(context)
                     .data(article.imageUrl)
                     .crossfade(true)
                     .build(),
@@ -153,7 +157,7 @@ private fun ArticleItem(
             contentAlignment = Alignment.CenterEnd
         ) {
             Text(
-                text = article.date,
+                text = formatDate(rawDate = article.date, context = context),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
