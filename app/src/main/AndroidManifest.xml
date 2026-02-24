@@ -4,6 +4,7 @@
     package="com.iucoding.dailyaipulse">
 
     <application
+        android:name=".DailyAIPulseApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
