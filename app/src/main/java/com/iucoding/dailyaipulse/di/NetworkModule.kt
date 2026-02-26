@@ -2,6 +2,7 @@ package com.iucoding.dailyaipulse.di
 
 import com.iucoding.dailyaipulse.BuildConfig
 import com.iucoding.dailyaipulse.articles.data.api.ArticleApi
+import com.iucoding.dailyaipulse.sources.data.api.SourceApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,6 +50,11 @@ object NetworkModule {
     @Singleton
     fun provideArticleApi(retrofit: Retrofit): ArticleApi =
         retrofit.create(ArticleApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSourceApi(retrofit: Retrofit): SourceApi =
+        retrofit.create(SourceApi::class.java)
 
     @Provides
     @Singleton
