@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">DailyAIPulse</string>
     <string name="articles_screen_title">Articles</string>
+    <string name="sources_screen_title">Sources</string>
 
     <string name="article_date_today">Today</string>
     <string name="article_date_yesterday">Yesterday</string>
