@@ -22,6 +22,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "NEWS_API_KEY", "\"${project.findProperty("NEWS_API_KEY") ?: ""}\"")
+        buildConfigField("String", "CHATGPT_API_KEY", "\"${project.findProperty("CHATGPT_API_KEY") ?: ""}\"")
     }
 
     buildTypes {
