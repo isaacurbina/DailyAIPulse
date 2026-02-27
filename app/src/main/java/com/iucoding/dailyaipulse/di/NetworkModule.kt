@@ -1,7 +1,7 @@
 package com.iucoding.dailyaipulse.di
 
 import com.iucoding.dailyaipulse.BuildConfig
-import com.iucoding.dailyaipulse.ai.data.OpenAIApi
+import com.iucoding.dailyaipulse.ai.data.GptApi
 import com.iucoding.dailyaipulse.ai.interceptor.AuthInterceptor
 import com.iucoding.dailyaipulse.articles.data.api.ArticleApi
 import com.iucoding.dailyaipulse.sources.data.api.SourceApi
@@ -68,17 +68,20 @@ object NetworkModule {
 	@Singleton
 	@Named("news_api_key")
 	fun provideNewsApiKey(): String = BuildConfig.NEWS_API_KEY
-	val logging = HttpLoggingInterceptor().apply {
-		level = HttpLoggingInterceptor.Level.BODY
-	}
 
 	@Provides
 	@Singleton
 	@Named("openai_okhttp_client")
-	fun provideOpenAiOkHttpClient(): OkHttpClient {
+	fun provideOpenAiOkHttpClient(
+		@Named("gpt_api_key") apiKey: String
+	): OkHttpClient {
 		return OkHttpClient.Builder()
-			.addInterceptor(AuthInterceptor("YOUR_API_KEY"))
-			.addInterceptor(logging)
+			.addInterceptor(AuthInterceptor(apiKey))
+			.addInterceptor(
+				HttpLoggingInterceptor().apply {
+					level = HttpLoggingInterceptor.Level.BODY
+				}
+			)
 			.build()
 	}
 
@@ -86,12 +89,13 @@ object NetworkModule {
 	@Singleton
 	@Named("openai_retrofit")
 	fun provideOpenAiRetrofit(
-		@Named("openai_okhttp_client") okHttpClient: OkHttpClient
+		@Named("openai_okhttp_client") okHttpClient: OkHttpClient,
+		moshi: Moshi
 	): Retrofit {
 		return Retrofit.Builder()
 			.baseUrl("https://api.openai.com/")
 			.client(okHttpClient)
-			.addConverterFactory(MoshiConverterFactory.create())
+			.addConverterFactory(MoshiConverterFactory.create(moshi))
 			.build()
 	}
 
@@ -99,12 +103,12 @@ object NetworkModule {
 	@Singleton
 	fun provideOpenAiApi(
 		@Named("openai_retrofit") retrofit: Retrofit
-	): OpenAIApi {
-		return retrofit.create(OpenAIApi::class.java)
+	): GptApi {
+		return retrofit.create(GptApi::class.java)
 	}
 
 	@Provides
 	@Singleton
-	@Named("chatgpt_api_key")
-	fun provideChatGptApiKey(): String = BuildConfig.NEWS_API_KEY
+	@Named("gpt_api_key")
+	fun provideChatGptApiKey(): String = BuildConfig.CHATGPT_API_KEY
 }
