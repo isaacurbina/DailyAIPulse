@@ -1,4 +1,3 @@
-// kotlin
 package com.iucoding.dailyaipulse
 
 import android.os.Bundle
@@ -23,7 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.WindowCompat
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.iucoding.dailyaipulse.articles.ui.ArticleScreen
+import com.iucoding.dailyaipulse.auth.LoginScreen
+import com.iucoding.dailyaipulse.auth.SignupScreen
 import com.iucoding.dailyaipulse.sources.ui.SourceScreen
 import com.iucoding.dailyaipulse.ui.theme.DailyAIPulseTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -37,7 +41,6 @@ enum class BottomNavItem(val label: Int, val icon: ImageVector) {
 class MainActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		// Enable edge-to-edge handling and let Compose apply insets
 		WindowCompat.setDecorFitsSystemWindows(window, false)
 
 		setContent {
@@ -47,7 +50,39 @@ class MainActivity : ComponentActivity() {
 						.fillMaxSize()
 						.systemBarsPadding()
 				) {
-					MainContent()
+					val navController = rememberNavController()
+
+					NavHost(navController = navController, startDestination = "login") {
+						composable("login") {
+							LoginScreen(
+								onLoginClick = {
+									navController.navigate("main") {
+										popUpTo("login") { inclusive = true }
+									}
+								},
+								onCreateAccountClick = {
+									navController.navigate("signup")
+								}
+							)
+						}
+						composable("signup") {
+							SignupScreen(
+								onSignupClick = {
+									navController.navigate("main") {
+										popUpTo("login") { inclusive = true }
+									}
+								},
+								onLoginClick = {
+									navController.navigate("login") {
+										popUpTo("login") { inclusive = true }
+									}
+								}
+							)
+						}
+						composable("main") {
+							MainContent()
+						}
+					}
 				}
 			}
 		}

@@ -6,4 +6,17 @@
     <string name="article_date_today">Today</string>
     <string name="article_date_yesterday">Yesterday</string>
     <string name="article_date_days_ago">%d days ago</string>
+
+    <string name="login_title">Login</string>
+    <string name="login_email_label">Email</string>
+    <string name="login_password_label">Password</string>
+    <string name="login_button">Login</string>
+    <string name="login_create_account">Create a new account</string>
+
+    <string name="signup_title">Sign Up</string>
+    <string name="signup_name_label">Name</string>
+    <string name="signup_email_label">Email</string>
+    <string name="signup_password_label">Password</string>
+    <string name="signup_button">Sign Up</string>
+    <string name="signup_already_have_account">Already have an account? Login</string>
 </resources>
