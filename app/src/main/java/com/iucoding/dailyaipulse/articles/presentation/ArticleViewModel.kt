@@ -51,9 +51,11 @@ class ArticleViewModel @Inject constructor(
 	fun getAISummary() {
 		val currentState = _uiState.value
 		if (currentState is ArticleUiState.Success) {
+			if (currentState.isAiSummaryLoading) return
+
 			_uiState.value = currentState.copy(
 				isAiSummaryLoading = true,
-				showAiSummary = false // Reset before fetching
+				showAiSummary = false
 			)
 
 			viewModelScope.launch {
@@ -63,7 +65,7 @@ class ArticleViewModel @Inject constructor(
 					_uiState.value = currentState.copy(
 						aiSummary = summaryData.toAiSummary(),
 						isAiSummaryLoading = false,
-						showAiSummary = true // Trigger show after fetch
+						showAiSummary = true
 					)
 				} catch (throwable: Throwable) {
 					Timber.e(throwable, "Error getting AI summary")
@@ -83,11 +85,10 @@ class ArticleViewModel @Inject constructor(
 	fun onAiFabClicked() {
 		val currentState = _uiState.value
 		if (currentState is ArticleUiState.Success) {
-			if (currentState.aiSummary != null) {
-				_uiState.value = currentState.copy(showAiSummary = true)
-			} else {
-				getAISummary()
-			}
+			if (currentState.isAiSummaryLoading) return
+
+			// Force a new request every time the FAB is clicked
+			getAISummary()
 		}
 	}
 
