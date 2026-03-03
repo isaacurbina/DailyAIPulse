@@ -6,6 +6,7 @@ import com.iucoding.dailyaipulse.ai.model.AiSummaryData
 import com.iucoding.dailyaipulse.ai.repository.OpenAiRepository
 import com.iucoding.dailyaipulse.articles.data.model.ArticleData
 import com.iucoding.dailyaipulse.articles.data.repository.ArticleRepository
+import com.iucoding.dailyaipulse.articles.presentation.model.AiSummary
 import com.iucoding.dailyaipulse.articles.presentation.model.Article
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,9 +48,25 @@ class ArticleViewModel @Inject constructor(
         }
     }
 
-	suspend fun sendMessage(articleTitles: List<String>): AiSummaryData {
-		val response = openAiRepository.getArticleSummary(articleTitles)
-		return response
+	fun getAISummary() {
+		val currentState = _uiState.value
+		if (currentState is ArticleUiState.Success) {
+			_uiState.value = currentState.copy(isAiSummaryLoading = true)
+
+			viewModelScope.launch {
+				try {
+					val articleTitles = currentState.articles.map { it.title }
+					val summaryData = openAiRepository.getArticleSummary(articleTitles)
+					_uiState.value = currentState.copy(
+						aiSummary = summaryData.toAiSummary(),
+						isAiSummaryLoading = false
+					)
+				} catch (throwable: Throwable) {
+					Timber.e(throwable, "Error getting AI summary")
+					_uiState.value = currentState.copy(isAiSummaryLoading = false)
+				}
+			}
+		}
 	}
 
     private fun emitState(state: ArticleUiState) {
@@ -69,4 +86,11 @@ private fun ArticleData.toArticle(): Article {
         date = date,
         content = content
     )
+}
+
+private fun AiSummaryData.toAiSummary(): AiSummary {
+	return AiSummary(
+		summary = summary ?: "No summary available",
+		investingSentiment = investingSentiment ?: "Neutral"
+	)
 }

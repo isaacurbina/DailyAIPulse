@@ -10,12 +10,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -31,14 +42,25 @@ import coil.request.ImageRequest
 import com.iucoding.dailyaipulse.R
 import com.iucoding.dailyaipulse.articles.presentation.ArticleUiState
 import com.iucoding.dailyaipulse.articles.presentation.ArticleViewModel
+import com.iucoding.dailyaipulse.articles.presentation.model.AiSummary
 import com.iucoding.dailyaipulse.articles.presentation.model.Article
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ArticleScreen(
     modifier: Modifier = Modifier,
     viewModel: ArticleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+	val sheetState = rememberModalBottomSheetState()
+	var showBottomSheet by remember { mutableStateOf(false) }
+
+	// Automatically show the bottom sheet when a new AI summary arrives
+	LaunchedEffect((uiState as? ArticleUiState.Success)?.aiSummary) {
+		if ((uiState as? ArticleUiState.Success)?.aiSummary != null) {
+			showBottomSheet = true
+		}
+	}
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -50,7 +72,29 @@ fun ArticleScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
-        }
+        },
+		floatingActionButton = {
+			if (uiState is ArticleUiState.Success) {
+				FloatingActionButton(
+					onClick = { viewModel.getAISummary() },
+					containerColor = MaterialTheme.colorScheme.primaryContainer,
+					contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+				) {
+					if ((uiState as ArticleUiState.Success).isAiSummaryLoading) {
+						CircularProgressIndicator(
+							modifier = Modifier.padding(12.dp),
+							strokeWidth = 2.dp,
+							color = MaterialTheme.colorScheme.onPrimaryContainer
+						)
+					} else {
+						Icon(
+							imageVector = Icons.Default.AutoAwesome,
+							contentDescription = "AI Summary"
+						)
+					}
+				}
+			}
+		}
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -82,10 +126,58 @@ fun ArticleScreen(
 
                 is ArticleUiState.Success -> {
                     ArticleList(articles = state.articles)
+
+					if (showBottomSheet && state.aiSummary != null) {
+						ModalBottomSheet(
+							onDismissRequest = { showBottomSheet = false },
+							sheetState = sheetState
+						) {
+							AiSummaryContent(aiSummary = state.aiSummary)
+						}
+					}
                 }
             }
         }
     }
+}
+
+@Composable
+private fun AiSummaryContent(
+	aiSummary: AiSummary,
+	modifier: Modifier = Modifier
+) {
+	Column(
+		modifier = modifier
+			.fillMaxWidth()
+			.padding(16.dp)
+			.padding(bottom = 32.dp)
+	) {
+		Text(
+			text = "AI Summary",
+			style = MaterialTheme.typography.headlineSmall,
+			fontWeight = FontWeight.Bold
+		)
+		Spacer(modifier = Modifier.height(16.dp))
+		Text(
+			text = aiSummary.summary,
+			style = MaterialTheme.typography.bodyLarge
+		)
+		Spacer(modifier = Modifier.height(24.dp))
+		Text(
+			text = "Investing Sentiment",
+			style = MaterialTheme.typography.titleMedium,
+			fontWeight = FontWeight.Bold
+		)
+		Text(
+			text = aiSummary.investingSentiment,
+			style = MaterialTheme.typography.bodyMedium,
+			color = when (aiSummary.investingSentiment.lowercase()) {
+				"positive", "good" -> MaterialTheme.colorScheme.primary
+				"negative", "bad" -> MaterialTheme.colorScheme.error
+				else -> MaterialTheme.colorScheme.onSurfaceVariant
+			}
+		)
+	}
 }
 
 @Composable
@@ -163,4 +255,8 @@ private fun ArticleItem(
             )
         }
     }
+}
+
+fun formatDate(rawDate: String?, context: android.content.Context): String {
+	return rawDate ?: ""
 }

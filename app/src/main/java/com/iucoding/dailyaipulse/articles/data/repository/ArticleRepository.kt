@@ -5,14 +5,14 @@ import com.iucoding.dailyaipulse.articles.data.api.dto.ArticleDto
 import com.iucoding.dailyaipulse.articles.data.api.dto.SourceDto
 import com.iucoding.dailyaipulse.articles.data.model.ArticleData
 import com.iucoding.dailyaipulse.articles.data.model.SourceData
+import com.iucoding.dailyaipulse.di.NetworkModule
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Singleton
 class ArticleRepository @Inject constructor(
-    private val api: ArticleApi,
-    @Named("news_api_key") private val apiKey: String
+	private val api: ArticleApi,
+    @NetworkModule.NewsApiKey private val apiKey: String
 ) {
 
     suspend fun getArticles(): List<ArticleData> {
