@@ -76,6 +76,9 @@ class MainActivity : ComponentActivity() {
 									navController.navigate("login") {
 										popUpTo("login") { inclusive = true }
 									}
+								},
+								onBackClick = {
+									navController.popBackStack()
 								}
 							)
 						}
