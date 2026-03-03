@@ -4,20 +4,23 @@ import com.iucoding.dailyaipulse.ai.data.GptApi
 import com.iucoding.dailyaipulse.ai.model.AiSummaryData
 import com.iucoding.dailyaipulse.ai.model.ChatRequest
 import com.iucoding.dailyaipulse.ai.model.Message
+import com.iucoding.dailyaipulse.ai.model.ResponseFormat
 import com.iucoding.dailyaipulse.di.NetworkModule
+import com.squareup.moshi.Moshi
+import timber.log.Timber
 import javax.inject.Inject
-import javax.inject.Named
 
 class OpenAiRepository @Inject constructor(
 	private val gptApi: GptApi,
-	@NetworkModule.OpenAiApiKey private val apiKey: String
+	@NetworkModule.OpenAiApiKey private val apiKey: String,
+	private val moshi: Moshi
 ) {
 
 	suspend fun getArticleSummary(articleTitles: List<String>): AiSummaryData {
 		if (apiKey.isBlank()) {
 			return AiSummaryData(
-				summary = "It was a good business day with no significant news",
-				investingSentiment = "Good"
+				summary = "No API key provided. Please check your configuration.",
+				investingSentiment = "N/A"
 			)
 		}
 
@@ -26,48 +29,66 @@ class OpenAiRepository @Inject constructor(
 			messages = listOf(
 				Message(
 					"system",
-					"You are a financial assistant that summarizes news and analyzes investing sentiment."
+					"You are a financial assistant that summarizes news and analyzes investing sentiment. You must respond with valid JSON."
 				),
 				Message(
 					"user",
 					"""
-						Based on the following article titles, please do two things:
+                        Based on the following article titles, please do two things:
 
-						1. Provide a short, high-level summary of the day.
-						2. Indicate the overall investing sentiment and whether it's positive, negative or neutral.
+                        1. Provide a short, high-level summary of the day.
+                        2. Indicate the overall investing sentiment and whether it's positive, negative or neutral.
 
-						Format your response strictly as valid JSON like this:
+                        Format your response strictly as valid JSON like this:
 
+                        {
+                            "summary": "...",
+                            "investingSentiment": "..."
+                        }
 
-						{
-							"summary": "...",
-							"investingSentiment": "..."
-						}
-
-						Here are the article titles:
-						${articleTitles.joinToString()}
-					""".trimIndent()
+                        Here are the article titles:
+                        ${articleTitles.joinToString()}
+                    """.trimIndent()
 				)
 			),
-			temperature = 0.5
+			temperature = 0.5,
+			responseFormat = ResponseFormat(type = "json_object")
 		)
-		val response = gptApi.createChatCompletion(apiKey = apiKey, request = request)
-		return if (response.isSuccessful) {
-			val summary = response.body()
-				?.choices
-				?.firstOrNull()
-				?.message
-				?.content
-			AiSummaryData(
-				summary = summary,
-				investingSentiment = "Good"
-			)
 
-		} else {
-			println("Error: ${response.errorBody()?.string()}")
+		return try {
+			val response = gptApi.createChatCompletion(request)
+			if (response.isSuccessful) {
+				val content = response.body()
+					?.choices
+					?.firstOrNull()
+					?.message
+					?.content
+
+				if (content != null) {
+					val adapter = moshi.adapter(AiSummaryData::class.java)
+					adapter.fromJson(content) ?: AiSummaryData(
+						summary = "Failed to parse AI response.",
+						investingSentiment = "Unknown"
+					)
+				} else {
+					AiSummaryData(
+						summary = "Empty response from AI.",
+						investingSentiment = "Unknown"
+					)
+				}
+			} else {
+				val errorBody = response.errorBody()?.string()
+				Timber.e("OpenAI API Error: $errorBody")
+				AiSummaryData(
+					summary = "Error from AI Service: $errorBody",
+					investingSentiment = "Error"
+				)
+			}
+		} catch (e: Exception) {
+			Timber.e(e, "Exception during OpenAI API call")
 			AiSummaryData(
-				summary = response.errorBody()?.string(),
-				investingSentiment = "Good"
+				summary = "Failed to connect to AI Service: ${e.message}",
+				investingSentiment = "Error"
 			)
 		}
 	}

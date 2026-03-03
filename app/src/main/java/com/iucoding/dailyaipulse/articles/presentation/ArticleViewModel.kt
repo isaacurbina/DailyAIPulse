@@ -51,7 +51,10 @@ class ArticleViewModel @Inject constructor(
 	fun getAISummary() {
 		val currentState = _uiState.value
 		if (currentState is ArticleUiState.Success) {
-			_uiState.value = currentState.copy(isAiSummaryLoading = true)
+			_uiState.value = currentState.copy(
+				isAiSummaryLoading = true,
+				showAiSummary = false // Reset before fetching
+			)
 
 			viewModelScope.launch {
 				try {
@@ -59,12 +62,31 @@ class ArticleViewModel @Inject constructor(
 					val summaryData = openAiRepository.getArticleSummary(articleTitles)
 					_uiState.value = currentState.copy(
 						aiSummary = summaryData.toAiSummary(),
-						isAiSummaryLoading = false
+						isAiSummaryLoading = false,
+						showAiSummary = true // Trigger show after fetch
 					)
 				} catch (throwable: Throwable) {
 					Timber.e(throwable, "Error getting AI summary")
 					_uiState.value = currentState.copy(isAiSummaryLoading = false)
 				}
+			}
+		}
+	}
+
+	fun onAiSummaryDismissed() {
+		val currentState = _uiState.value
+		if (currentState is ArticleUiState.Success) {
+			_uiState.value = currentState.copy(showAiSummary = false)
+		}
+	}
+
+	fun onAiFabClicked() {
+		val currentState = _uiState.value
+		if (currentState is ArticleUiState.Success) {
+			if (currentState.aiSummary != null) {
+				_uiState.value = currentState.copy(showAiSummary = true)
+			} else {
+				getAISummary()
 			}
 		}
 	}

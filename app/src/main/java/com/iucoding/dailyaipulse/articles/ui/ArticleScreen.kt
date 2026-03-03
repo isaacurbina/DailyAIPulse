@@ -22,11 +22,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -53,14 +49,6 @@ fun ArticleScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 	val sheetState = rememberModalBottomSheetState()
-	var showBottomSheet by remember { mutableStateOf(false) }
-
-	// Automatically show the bottom sheet when a new AI summary arrives
-	LaunchedEffect((uiState as? ArticleUiState.Success)?.aiSummary) {
-		if ((uiState as? ArticleUiState.Success)?.aiSummary != null) {
-			showBottomSheet = true
-		}
-	}
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -76,7 +64,7 @@ fun ArticleScreen(
 		floatingActionButton = {
 			if (uiState is ArticleUiState.Success) {
 				FloatingActionButton(
-					onClick = { viewModel.getAISummary() },
+					onClick = { viewModel.onAiFabClicked() },
 					containerColor = MaterialTheme.colorScheme.primaryContainer,
 					contentColor = MaterialTheme.colorScheme.onPrimaryContainer
 				) {
@@ -127,9 +115,9 @@ fun ArticleScreen(
                 is ArticleUiState.Success -> {
                     ArticleList(articles = state.articles)
 
-					if (showBottomSheet && state.aiSummary != null) {
+					if (state.showAiSummary && state.aiSummary != null) {
 						ModalBottomSheet(
-							onDismissRequest = { showBottomSheet = false },
+							onDismissRequest = { viewModel.onAiSummaryDismissed() },
 							sheetState = sheetState
 						) {
 							AiSummaryContent(aiSummary = state.aiSummary)
