@@ -4,12 +4,13 @@ import com.iucoding.dailyaipulse.ai.data.GptApi
 import com.iucoding.dailyaipulse.ai.model.AiSummaryData
 import com.iucoding.dailyaipulse.ai.model.ChatRequest
 import com.iucoding.dailyaipulse.ai.model.Message
+import com.iucoding.dailyaipulse.di.NetworkModule
 import javax.inject.Inject
 import javax.inject.Named
 
 class OpenAiRepository @Inject constructor(
 	private val gptApi: GptApi,
-	@Named("gpt_api_key") private val apiKey: String
+	@NetworkModule.OpenAiApiKey private val apiKey: String
 ) {
 
 	suspend fun getArticleSummary(articleTitles: List<String>): AiSummaryData {

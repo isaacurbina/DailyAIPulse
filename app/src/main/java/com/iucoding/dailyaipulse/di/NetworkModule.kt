@@ -15,7 +15,6 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import javax.inject.Named
 import javax.inject.Qualifier
 import javax.inject.Singleton
 
@@ -40,6 +39,14 @@ object NetworkModule {
 	@Qualifier
 	@Retention(AnnotationRetention.BINARY)
 	annotation class OpenAiOkHttpClient
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class NewsApiKey
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class OpenAiApiKey
 
 	@Provides
 	@Singleton
@@ -82,15 +89,13 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("news_api_key")
+	@NewsApiKey
 	fun provideNewsApiKey(): String = BuildConfig.NEWS_API_KEY
 
 	@Provides
 	@Singleton
 	@OpenAiOkHttpClient
-	fun provideOpenAiOkHttpClient(
-		@Named("gpt_api_key") apiKey: String
-	): OkHttpClient {
+	fun provideOpenAiOkHttpClient(@OpenAiApiKey apiKey: String): OkHttpClient {
 		return OkHttpClient.Builder()
 			.addInterceptor(AuthInterceptor(apiKey))
 			.addInterceptor(
@@ -123,6 +128,6 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("gpt_api_key")
+	@OpenAiApiKey
 	fun provideChatGptApiKey(): String = BuildConfig.CHATGPT_API_KEY
 }
