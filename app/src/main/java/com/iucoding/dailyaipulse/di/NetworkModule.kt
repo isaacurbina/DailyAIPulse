@@ -16,6 +16,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Named
+import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -23,6 +24,22 @@ import javax.inject.Singleton
 object NetworkModule {
 
 	private const val BASE_URL = "https://newsapi.org/"
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class NewsRetrofit
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class OpenAiRetrofit
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class NewsOkHttpClient
+
+	@Qualifier
+	@Retention(AnnotationRetention.BINARY)
+	annotation class OpenAiOkHttpClient
 
 	@Provides
 	@Singleton
@@ -32,7 +49,7 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("okhttp_client")
+	@NewsOkHttpClient
 	fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
 		.addInterceptor(
 			HttpLoggingInterceptor().apply {
@@ -43,9 +60,9 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("retrofit")
+	@NewsRetrofit
 	fun provideRetrofit(
-		@Named("okhttp_client") okHttpClient: OkHttpClient,
+		@NewsOkHttpClient okHttpClient: OkHttpClient,
 		moshi: Moshi
 	): Retrofit = Retrofit.Builder()
 		.baseUrl(BASE_URL)
@@ -55,13 +72,12 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	fun provideArticleApi(@Named("retrofit") retrofit: Retrofit): ArticleApi =
+	fun provideArticleApi(@NewsRetrofit retrofit: Retrofit): ArticleApi =
 		retrofit.create(ArticleApi::class.java)
 
 	@Provides
 	@Singleton
-	fun provideSourceApi(
-		@Named("retrofit") retrofit: Retrofit): SourceApi =
+	fun provideSourceApi(@NewsRetrofit retrofit: Retrofit): SourceApi =
 		retrofit.create(SourceApi::class.java)
 
 	@Provides
@@ -71,7 +87,7 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("openai_okhttp_client")
+	@OpenAiOkHttpClient
 	fun provideOpenAiOkHttpClient(
 		@Named("gpt_api_key") apiKey: String
 	): OkHttpClient {
@@ -87,9 +103,9 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	@Named("openai_retrofit")
+	@OpenAiRetrofit
 	fun provideOpenAiRetrofit(
-		@Named("openai_okhttp_client") okHttpClient: OkHttpClient,
+		@OpenAiOkHttpClient okHttpClient: OkHttpClient,
 		moshi: Moshi
 	): Retrofit {
 		return Retrofit.Builder()
@@ -101,9 +117,7 @@ object NetworkModule {
 
 	@Provides
 	@Singleton
-	fun provideOpenAiApi(
-		@Named("openai_retrofit") retrofit: Retrofit
-	): GptApi {
+	fun provideOpenAiApi(@OpenAiRetrofit retrofit: Retrofit): GptApi {
 		return retrofit.create(GptApi::class.java)
 	}
 
