@@ -8,7 +8,8 @@ sealed interface ArticleUiState {
     data class Success(
         val articles: List<Article>,
         val aiSummary: AiSummary? = null,
-        val isAiSummaryLoading: Boolean = false
+        val isAiSummaryLoading: Boolean = false,
+        val showAiSummary: Boolean = false
     ) : ArticleUiState
     data class Error(val message: String) : ArticleUiState
 }
