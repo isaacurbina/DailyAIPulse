@@ -48,7 +48,7 @@ fun ArticleScreen(
     viewModel: ArticleViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-	val sheetState = rememberModalBottomSheetState()
+    val sheetState = rememberModalBottomSheetState()
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -61,28 +61,28 @@ fun ArticleScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
         },
-		floatingActionButton = {
-			if (uiState is ArticleUiState.Success) {
-				FloatingActionButton(
-					onClick = { viewModel.onAiFabClicked() },
-					containerColor = MaterialTheme.colorScheme.primaryContainer,
-					contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-				) {
-					if ((uiState as ArticleUiState.Success).isAiSummaryLoading) {
-						CircularProgressIndicator(
-							modifier = Modifier.padding(12.dp),
-							strokeWidth = 2.dp,
-							color = MaterialTheme.colorScheme.onPrimaryContainer
-						)
-					} else {
-						Icon(
-							imageVector = Icons.Default.AutoAwesome,
-							contentDescription = "AI Summary"
-						)
-					}
-				}
-			}
-		}
+        floatingActionButton = {
+            if (uiState is ArticleUiState.Success) {
+                FloatingActionButton(
+                    onClick = { viewModel.onAiFabClicked() },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ) {
+                    if ((uiState as ArticleUiState.Success).isAiSummaryLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(12.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = "AI Summary"
+                        )
+                    }
+                }
+            }
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier
@@ -115,14 +115,14 @@ fun ArticleScreen(
                 is ArticleUiState.Success -> {
                     ArticleList(articles = state.articles)
 
-					if (state.showAiSummary && state.aiSummary != null) {
-						ModalBottomSheet(
-							onDismissRequest = { viewModel.onAiSummaryDismissed() },
-							sheetState = sheetState
-						) {
-							AiSummaryContent(aiSummary = state.aiSummary)
-						}
-					}
+                    if (state.showAiSummary && state.aiSummary != null) {
+                        ModalBottomSheet(
+                            onDismissRequest = { viewModel.onAiSummaryDismissed() },
+                            sheetState = sheetState
+                        ) {
+                            AiSummaryContent(aiSummary = state.aiSummary)
+                        }
+                    }
                 }
             }
         }
@@ -131,41 +131,41 @@ fun ArticleScreen(
 
 @Composable
 private fun AiSummaryContent(
-	aiSummary: AiSummary,
-	modifier: Modifier = Modifier
+    aiSummary: AiSummary,
+    modifier: Modifier = Modifier
 ) {
-	Column(
-		modifier = modifier
-			.fillMaxWidth()
-			.padding(16.dp)
-			.padding(bottom = 32.dp)
-	) {
-		Text(
-			text = "AI Summary",
-			style = MaterialTheme.typography.headlineSmall,
-			fontWeight = FontWeight.Bold
-		)
-		Spacer(modifier = Modifier.height(16.dp))
-		Text(
-			text = aiSummary.summary,
-			style = MaterialTheme.typography.bodyLarge
-		)
-		Spacer(modifier = Modifier.height(24.dp))
-		Text(
-			text = "Investing Sentiment",
-			style = MaterialTheme.typography.titleMedium,
-			fontWeight = FontWeight.Bold
-		)
-		Text(
-			text = aiSummary.investingSentiment,
-			style = MaterialTheme.typography.bodyMedium,
-			color = when (aiSummary.investingSentiment.lowercase()) {
-				"positive", "good" -> MaterialTheme.colorScheme.primary
-				"negative", "bad" -> MaterialTheme.colorScheme.error
-				else -> MaterialTheme.colorScheme.onSurfaceVariant
-			}
-		)
-	}
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .padding(bottom = 32.dp)
+    ) {
+        Text(
+            text = "AI Summary",
+            style = MaterialTheme.typography.headlineSmall,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Text(
+            text = aiSummary.summary,
+            style = MaterialTheme.typography.bodyLarge
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "Investing Sentiment",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold
+        )
+        Text(
+            text = aiSummary.investingSentiment,
+            style = MaterialTheme.typography.bodyMedium,
+            color = when (aiSummary.investingSentiment.lowercase()) {
+                "positive", "good" -> MaterialTheme.colorScheme.primary
+                "negative", "bad" -> MaterialTheme.colorScheme.error
+                else -> MaterialTheme.colorScheme.onSurfaceVariant
+            }
+        )
+    }
 }
 
 @Composable
@@ -237,14 +237,10 @@ private fun ArticleItem(
             contentAlignment = Alignment.CenterEnd
         ) {
             Text(
-                text = formatDate(rawDate = article.date, context = context),
+                text = formatDate(article.date ?: "", context),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
-}
-
-fun formatDate(rawDate: String?, context: android.content.Context): String {
-	return rawDate ?: ""
 }
